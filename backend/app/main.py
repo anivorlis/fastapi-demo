@@ -6,14 +6,14 @@ import os
 from dotenv import load_dotenv
 
 
-app = FastAPI()
-DATABASE = os.getenv("DATABASE", "data/temperature_data.db")
-
 load_dotenv()  # Load variables from .env
 
+DATABASE = os.getenv("DATABASE", "data/temperature_data.db")
 HOST = os.getenv("HOST", "127.0.0.1")
 PORT = int(os.getenv("PORT", 8000))
 RELOAD = os.getenv("RELOAD", "True").lower() == "true"
+
+app = FastAPI()
 
 class TemperatureData(BaseModel):
     temperature: float

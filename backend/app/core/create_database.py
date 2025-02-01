@@ -5,6 +5,9 @@ from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
 
+
+load_dotenv()  # Load variables from .env
+
 # Database configuration
 DATABASE = os.getenv("DATABASE", "data/temperature_data.db")
 
@@ -48,6 +51,8 @@ def delete_database():
 
 def create_database():
     """Creates the SQLite database and table if they don't exist."""
+    if not os.path.isdir("data"):
+        os.mkdir("data")
     conn = sqlite3.connect(DATABASE)
     try:
         conn.execute("""
