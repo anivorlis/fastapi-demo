@@ -83,4 +83,4 @@ if __name__ == "__main__":
     import uvicorn
 
     create_database_if_not_exists()  # Create the database on startup (if it doesn't exist)
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
