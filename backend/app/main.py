@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 
 app = FastAPI()
-DATABASE = "data/temperature_data.db"
+DATABASE = os.getenv("DATABASE", "data/temperature_data.db")
 
 load_dotenv()  # Load variables from .env
 

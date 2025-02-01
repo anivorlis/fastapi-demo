@@ -3,9 +3,10 @@ import random
 import math
 from datetime import datetime, timedelta
 import os
+from dotenv import load_dotenv
 
 # Database configuration
-DATABASE = "temperature_data.db"  # Same as in your FastAPI app
+DATABASE = os.getenv("DATABASE", "data/temperature_data.db")
 
 
 def generate_temperature_data(location="Location1", year=2024, month=1, day=1):
