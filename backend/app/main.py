@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import sqlite3
 from datetime import datetime
-
+import os
 
 app = FastAPI()
 DATABASE = "data/temperature_data.db"
@@ -21,6 +21,8 @@ def close_db_connection(conn):
     conn.close()
 
 def create_database_if_not_exists():
+    if not os.path.isdir("data"):
+        os.mkdir("data")
     conn = sqlite3.connect(DATABASE)
     try:
         conn.execute("""
