@@ -3,9 +3,17 @@ from pydantic import BaseModel
 import sqlite3
 from datetime import datetime
 import os
+from dotenv import load_dotenv
+
 
 app = FastAPI()
 DATABASE = "data/temperature_data.db"
+
+load_dotenv()  # Load variables from .env
+
+HOST = os.getenv("HOST", "127.0.0.1")
+PORT = int(os.getenv("PORT", 8000))
+RELOAD = os.getenv("RELOAD", "True").lower() == "true"
 
 class TemperatureData(BaseModel):
     temperature: float
@@ -83,4 +91,4 @@ if __name__ == "__main__":
     import uvicorn
 
     create_database_if_not_exists()  # Create the database on startup (if it doesn't exist)
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host=HOST, port=PORT, reload=RELOAD)
