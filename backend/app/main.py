@@ -1,10 +1,11 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+import os
 import sqlite3
 from datetime import datetime
-import os
-from dotenv import load_dotenv
 
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from routers import temperatures
 
 load_dotenv()  # Load variables from .env
 
@@ -14,6 +15,7 @@ PORT = int(os.getenv("PORT", 8000))
 RELOAD = os.getenv("RELOAD", "True").lower() == "true"
 
 app = FastAPI()
+app.include_router(temperatures.router, prefix="/api", tags=["Temp"])
 
 class TemperatureData(BaseModel):
     temperature: float
