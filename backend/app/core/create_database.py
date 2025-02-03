@@ -1,15 +1,12 @@
 import math
-import os
 import random
-import sqlite3
 from datetime import datetime, timedelta
 
-from dotenv import load_dotenv
+from sqlalchemy.orm import Session
 
-load_dotenv()  # Load variables from .env
-
-# Database configuration
-DATABASE = os.getenv("DATABASE", "data/temperature_data.db")
+from app.core.database import create_database, delete_database, get_db
+from app.models.temperatures import TemperatureData
+from app.schemas.temperatures import TemperatureDataCreate
 
 
 def generate_temperature_data(location="Location1", year=2024, month=1, day=1):
@@ -32,67 +29,31 @@ def generate_temperature_data(location="Location1", year=2024, month=1, day=1):
         noise = random.uniform(-0.2, 0.2)  # Reduced noise level
 
         temperature = base_temp + sin_variation + noise
-        data.append((temperature, location, current_date.isoformat()))
+        data.append(TemperatureDataCreate(temperature=temperature, location=location, datetime=current_date))
         current_date += timedelta(hours=1)
 
     return data
 
-
-def delete_database():
-    """Deletes the SQLite database file."""
+def store_temperature_data(data, db: Session):
+    location = data[0].location  # Assuming all data is for the same location
     try:
-        os.remove(DATABASE)
-        print(f"Database file '{DATABASE}' deleted.")
-    except FileNotFoundError:
-        print(f"Database file '{DATABASE}' not found.  Nothing to delete.")
-    except Exception as e:
-        print(f"Error deleting database file: {e}")
+        # Clear previous data for the same location
+        db.query(TemperatureData).filter(TemperatureData.location == location).delete()
+        db.commit()  # Commit the delete operation
 
-
-def create_database():
-    """Creates the SQLite database and table if they don't exist."""
-    if not os.path.isdir("data"):
-        os.mkdir("data")
-    conn = sqlite3.connect(DATABASE)
-    try:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS temperature (
-                temperature REAL,
-                location TEXT,
-                datetime TEXT
-            )
-        """)
-        conn.commit()
-        print("Database and table created (if they didn't exist).")
-    except Exception as e:
-        print(f"Error creating database/table: {e}")
-        conn.rollback() # Rollback in case of an error
-    finally:
-        conn.close()
-
-
-def store_temperature_data(data):
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-
-    location = data[0][1]  # Assuming all data is for the same location
-    try:
-        cursor.execute(f"DELETE FROM temperature WHERE location = '{location}'") # Clear previous data for the same location
-        conn.commit() # commit the delete
-
-        cursor.executemany("INSERT INTO temperature (temperature, location, datetime) VALUES (?, ?, ?)", data)
-        conn.commit()
+        # Insert new data
+        db_temperature_data = [TemperatureData(**item.dict()) for item in data]
+        db.add_all(db_temperature_data)
+        db.commit()
         print(f"Inserted {len(data)} records.")
     except Exception as e:
-        conn.rollback()  # Rollback if there's an error
+        db.rollback()  # Rollback if there's an error
         print(f"Error inserting data: {e}")
-    finally:
-        conn.close()
-
 
 if __name__ == "__main__":
     delete_database()
     create_database()
-    store_temperature_data(generate_temperature_data(location="AMS"))
-    store_temperature_data(generate_temperature_data(location="UTR"))
+    db = next(get_db())
+    store_temperature_data(generate_temperature_data(location="AMS"), db)
+    store_temperature_data(generate_temperature_data(location="UTR"), db)
     print("Temperature data generation and storage complete.")
