@@ -1,10 +1,9 @@
 import os
-import sys
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-from app.routers import temperatures
+from app.routers import groundwater, temperatures
 
 load_dotenv()  # Load variables from .env
 
@@ -13,10 +12,9 @@ PORT: int = int(os.getenv("PORT", 8000))
 RELOAD: bool = os.getenv("RELOAD", "True").lower() in ("true", "1", "t")
 
 app = FastAPI()
-for pypath in sys.path:
-    print(pypath)
 
 app.include_router(temperatures.router, prefix="", tags=["Temperatures"])
+app.include_router(groundwater.router, prefix="", tags=["Groundwater"])
 
 if __name__ == "__main__":
     import uvicorn
