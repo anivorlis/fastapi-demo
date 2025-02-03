@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.filehandler.temperatures import write_data_to_csv
 from app.models.temperatures import TemperatureData
-from app.schemas.temperatures import TemperatureDataCreate, TemperatureDataResponse
+from app.schemas.temperatures import TemperatureDataResponse
 
 router = APIRouter()
 
@@ -41,15 +41,3 @@ async def download_temperature_data_by_location(background_tasks: BackgroundTask
     background_tasks.add_task(delete_file, file_path)
 
     return response
-
-@router.post("/temperatures/", response_model=TemperatureDataResponse)
-async def create_temperature(temperature_data: TemperatureDataCreate, db: Session = Depends(get_db)):
-    try:
-        db_temperature_data = TemperatureData(**temperature_data.dict())
-        db.add(db_temperature_data)
-        db.commit()
-        db.refresh(db_temperature_data)
-        return db_temperature_data  # Return the created data
-    except Exception as e:
-        db.rollback()  # Rollback if there's an error
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
