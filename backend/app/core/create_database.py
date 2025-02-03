@@ -42,7 +42,7 @@ def store_temperature_data(data, db: Session):
         db.commit()  # Commit the delete operation
 
         # Insert new data
-        db_temperature_data = [TemperatureData(**item.dict()) for item in data]
+        db_temperature_data = [TemperatureData(**item.model_dump()) for item in data]
         db.add_all(db_temperature_data)
         db.commit()
         print(f"Inserted {len(data)} records.")
