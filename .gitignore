@@ -12,3 +12,6 @@ backend/.venv
 
 # data
 backend/data/
+
+# demo
+demo/
