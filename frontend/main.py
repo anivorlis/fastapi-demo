@@ -15,9 +15,16 @@ API_URL = f"http://{HOST}:{PORT}"
 
 st.title("Groundwater Data Entry and Visualization")
 
+def fetch_locations():
+    response = requests.get(f"{API_URL}/groundwaters_locations/")
+    if response.status_code == 200:
+        return response.json()
+    else:
+        st.error("Failed to fetch locations")
+        return []
+
 # Fetch available locations
-response = requests.get(f"{API_URL}/groundwaters_locations")
-locations = response.json()
+locations = fetch_locations()
 
 # Data Entry Form
 level = st.number_input("Enter Groundwater Level", step=0.1)
@@ -34,6 +41,8 @@ if st.button("Submit"):
         })
         if response.status_code == 200:
             st.success("Data submitted successfully!")
+            # Refetch locations after successful submission
+            locations = fetch_locations()
         else:
             st.error(f"Error: {response.json()['detail']}")
     except ValueError:
