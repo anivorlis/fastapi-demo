@@ -41,3 +41,11 @@ async def get_groundwater_measurements_by_location(location: str, db: Session = 
         return measurements
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
+    
+@router.get("/groundwaters_locations/", response_model=List[str])
+async def get_positions(db: Session = Depends(get_db)):
+    try:
+        positions = db.query(GroundwaterMeasurement.location).distinct().all()
+        return [position[0] for position in positions]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
